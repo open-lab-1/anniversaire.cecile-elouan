@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Interface DJ - Suggestions du soir</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+        /* ------------------------------
+           RESET & BASE
+        ------------------------------ */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #3b2a1f 0%, #0b0b0b 45%, #000000 100%);
+            color: #f5f0e6;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 16px;
+        }
+
+        /* ------------------------------
+           LAYOUT
+        ------------------------------ */
+        .app-container {
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(10, 10, 10, 0.95);
+            border-radius: 18px;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            box-shadow:
+                0 0 0 1px rgba(0, 0, 0, 0.9),
+                0 18px 40px rgba(0, 0, 0, 0.9),
+                0 0 40px rgba(255, 215, 0, 0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-inner {
+            padding: 18px 20px 20px;
+            display: grid;
+            grid-template-columns: minmax(0, 2.5fr) minmax(260px, 1fr);
+            grid-gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .app-inner {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ------------------------------
+           HEADER
+        ------------------------------ */
+        .app-header {
+            padding: 16px 20px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .header-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-title span.icon {
+            font-size: 1.5rem;
+        }
+
+        .header-sub {
+            font-size: 0.85rem;
+            color: #d3c7b5;
+        }
+
+        .header-sync {
+            font-size: 0.85rem;
+            color: #b9a58b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-sync-time {
+            font-weight: 500;
+            color: #f5f0e6;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(0, 128, 0, 0.12);
+            border: 1px solid rgba(0, 255, 0, 0.35);
+            font-size: 0.85rem;
+            color: #b9f6ca;
+        }
+
+        .live-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #00ff5a;
+            box-shadow: 0 0 8px rgba(0, 255, 90, 0.9);
+            animation: pulseLive 1.4s infinite;
+        }
+
+        @keyframes pulseLive {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.4; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .participants-counter {
+            font-size: 0.85rem;
+            color: #f5f0e6;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* ------------------------------
+           STAT CARDS
+        ------------------------------ */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-gap: 12px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 700px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card {
+            position: relative;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #1a120c 0%, #0c0c0c 60%, #1f130a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top left, rgba(255, 215, 0, 0.18), transparent 55%);
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            z-index: 1;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #d3c7b5;
+        }
+
+        .stat-icon {
+            font-size: 1.1rem;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #f5f0e6;
+            z-index: 1;
+        }
+
+        .stat-sub {
+            font-size: 0.75rem;
+            color: #b9a58b;
+            z-index: 1;
+        }
+
+        /* ------------------------------
+           ACTION BAR
+        ------------------------------ */
+        .actions-bar {
+            margin-top: 16px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: linear-gradient(90deg, #1a120c 0%, #0c0c0c 50%, #1a120c 100%);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .actions-left,
+        .actions-right {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: linear-gradient(135deg, #1b1b1b 0%, #0f0f0f 100%);
+            color: #f5f0e6;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition:
+                background 0.2s ease,
+                transform 0.12s ease,
+                box-shadow 0.2s ease,
+                border-color 0.2s ease;
+        }
+
+        .btn span.icon {
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #262626 0%, #141414 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.7);
+            border-color: rgba(255, 215, 0, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        .btn-toggle-active {
+            background: linear-gradient(135deg, #3b2a1f 0%, #1f130a 100%);
+            border-color: rgba(255, 215, 0, 0.7);
+            box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.4);
+        }
+
+        .search-input {
+            min-width: 180px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(0, 0, 0, 0.7);
+            color: #f5f0e6;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .search-input::placeholder {
+            color: #8a7a66;
+        }
+
+        .search-input:focus {
+            border-color: rgba(255, 215, 0, 0.7);
+            box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.4);
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .select-input {
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(0, 0, 0, 0.7);
+            color: #f5f0e6;
+            font-size: 0.85rem;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .select-input:focus {
+            border-color: rgba(255, 215, 0, 0.7);
+            box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.4);
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .filters-row {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .filter-pill {
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(0, 0, 0, 0.7);
+            font-size: 0.8rem;
+            color: #d3c7b5;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.12s ease;
+        }
+
+        .filter-pill-active {
+            background: linear-gradient(135deg, #3b2a1f 0%, #1f130a 100%);
+            border-color: rgba(255, 215, 0, 0.7);
+            color: #f5f0e6;
+            transform: translateY(-1px);
+        }
+
+        /* ------------------------------
+           SUGGESTIONS LIST
+        ------------------------------ */
+        .suggestions-section {
+            margin-top: 16px;
+        }
+
+        .suggestions-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .suggestions-title {
+            font-size: 1rem;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #d3c7b5;
+        }
+
+        .suggestions-count {
+            font-size: 0.8rem;
+            color: #b9a58b;
+        }
+
+        .suggestions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .suggestion-card {
+            position: relative;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #151515 0%, #0b0b0b 60%, #1a120c 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.7);
+            padding: 10px 12px;
+            display: grid;
+            grid-template-columns: 60px minmax(0, 1.8fr) minmax(0, 1.2fr);
+            grid-gap: 10px;
+            align-items: center;
+            transition:
+                transform 0.15s ease,
+                box-shadow 0.2s ease,
+                border-color 0.2s ease,
+                background 0.2s ease,
+                opacity 0.2s ease;
+        }
+
+        .suggestion-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 30px rgba(0, 0, 0, 0.8);
+            border-color: rgba(255, 215, 0, 0.4);
+        }
+
+        @media (max-width: 900px) {
+            .suggestion-card {
+                grid-template-columns: 60px minmax(0, 1fr);
+                grid-template-rows: auto auto;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .suggestion-card {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .suggestion-votes {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 6px 4px;
+            border-radius: 12px;
+            background: radial-gradient(circle at top, rgba(255, 215, 0, 0.18), transparent 60%);
+        }
+
+        .suggestion-votes-icon {
+            font-size: 1.1rem;
+        }
+
+        .suggestion-votes-count {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #ffb3b3;
+        }
+
+        .suggestion-main {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .suggestion-title-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .suggestion-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #f5f0e6;
+        }
+
+        .suggestion-artist {
+            font-size: 0.85rem;
+            color: #d3c7b5;
+        }
+
+        .suggestion-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: #b9a58b;
+        }
+
+        .suggestion-meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .suggestion-link {
+            font-size: 0.8rem;
+            color: #ffd700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .suggestion-link:hover {
+            text-decoration: underline;
+        }
+
+        .suggestion-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 6px;
+        }
+
+        .btn-small {
+            padding: 5px 9px;
+            font-size: 0.75rem;
+            border-radius: 999px;
+        }
+
+        .btn-played {
+            background: linear-gradient(135deg, #145a32 0%, #0b3d1f 100%);
+            border-color: rgba(46, 204, 113, 0.7);
+            color: #d5f5e3;
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #641e16 0%, #4a0b0b 100%);
+            border-color: rgba(231, 76, 60, 0.7);
+            color: #f9e0e0;
+        }
+
+        .btn-current {
+            background: linear-gradient(135deg, #7d6608 0%, #5d4b08 100%);
+            border-color: rgba(255, 215, 0, 0.9);
+            color: #f9e79f;
+        }
+
+        .suggestion-badge-played {
+            position: absolute;
+            top: 8px;
+            left: 10px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            background: rgba(46, 204, 113, 0.18);
+            border: 1px solid rgba(46, 204, 113, 0.7);
+            color: #d5f5e3;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .suggestion-badge-current {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            background: rgba(255, 215, 0, 0.18);
+            border: 1px solid rgba(255, 215, 0, 0.9);
+            color: #f9e79f;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .suggestion-card-played {
+            background: linear-gradient(135deg, #0b3d1f 0%, #0b0b0b 60%, #145a32 100%);
+            border-color: rgba(46, 204, 113, 0.7);
+        }
+
+        .suggestion-card-current {
+            box-shadow:
+                0 0 0 1px rgba(255, 215, 0, 0.7),
+                0 0 18px rgba(255, 215, 0, 0.5),
+                0 16px 30px rgba(0, 0, 0, 0.9);
+        }
+
+        /* ------------------------------
+           SIDE PANEL (TOP 5 + GRAPH)
+        ------------------------------ */
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .side-card {
+            border-radius: 14px;
+            background: linear-gradient(135deg, #1a120c 0%, #0c0c0c 60%, #1f130a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.7);
+            padding: 12px 14px;
+        }
+
+        .side-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .side-card-title {
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #d3c7b5;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .side-card-title span.icon {
+            font-size: 1.1rem;
+        }
+
+        .side-card-sub {
+            font-size: 0.75rem;
+            color: #b9a58b;
+        }
+
+        .top5-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .top5-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .top5-main {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .top5-title {
+            font-size: 0.85rem;
+            color: #f5f0e6;
+        }
+
+        .top5-artist {
+            font-size: 0.75rem;
+            color: #d3c7b5;
+        }
+
+        .top5-votes {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #ffb3b3;
+        }
+
+        /* Simple bar chart using pure HTML/CSS */
+        .chart-container {
+            margin-top: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .chart-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chart-label {
+            font-size: 0.75rem;
+            color: #d3c7b5;
+            min-width: 40px;
+        }
+
+        .chart-bar-wrapper {
+            flex: 1;
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            overflow: hidden;
+        }
+
+        .chart-bar {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #7d6608 0%, #ffd700 50%, #ffb3b3 100%);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .chart-value {
+            font-size: 0.75rem;
+            color: #b9a58b;
+            min-width: 26px;
+            text-align: right;
+        }
+
+        /* ------------------------------
+           FOOTER ACTIONS (DELETE ALL)
+        ------------------------------ */
+        .footer-actions {
+            padding: 10px 20px 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-danger-outline {
+            background: transparent;
+            border-color: rgba(231, 76, 60, 0.7);
+            color: #f9e0e0;
+        }
+
+        .btn-danger-outline:hover {
+            background: rgba(231, 76, 60, 0.18);
+        }
+
+        /* ------------------------------
+           MODAL (CONFIRM DELETE ALL)
+        ------------------------------ */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .modal-backdrop-visible {
+            display: flex;
+        }
+
+        .modal {
+            width: 100%;
+            max-width: 420px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #1a120c 0%, #0c0c0c 60%, #1f130a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow:
+                0 0 0 1px rgba(0, 0, 0, 0.9),
+                0 18px 40px rgba(0, 0, 0, 0.9),
+                0 0 40px rgba(255, 215, 0, 0.12);
+            padding: 16px 18px 14px;
+            animation: modalIn 0.2s ease-out;
+        }
+
+        @keyframes modalIn {
+            from {
+                transform: translateY(10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .modal-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #f5f0e6;
+        }
+
+        .modal-body {
+            font-size: 0.85rem;
+            color: #d3c7b5;
+            margin-bottom: 12px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* ------------------------------
+           TRANSITIONS FOR LIST CHANGES
+        ------------------------------ */
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(4px);
+        }
+
+        .fade-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .fade-exit {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .fade-exit-active {
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- HEADER -->
+    <header class="app-header">
+        <div class="header-left">
+            <div class="header-title">
+                <span class="icon">🎛️</span>
+                <span>Suggestions du soir</span>
+            </div>
+            <div class="header-sub">
+                Interface DJ Far West — soirée anniversaire
+            </div>
+            <div class="header-sync">
+                <span>Dernière synchronisation :</span>
+                <span id="last-sync" class="header-sync-time">—</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="live-indicator">
+                <span class="live-dot"></span>
+                <span>🟢 Live</span>
+            </div>
+            <div id="participants-counter" class="participants-counter">
+                👥 Participants : <span id="participants-count">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="app-inner">
+        <!-- LEFT COLUMN: STATS + ACTIONS + LIST -->
+        <section>
+            <!-- STAT CARDS -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-label">Suggestions reçues</div>
+                        <div class="stat-icon">🎵</div>
+                    </div>
+                    <div id="stat-suggestions" class="stat-value">0</div>
+                    <div class="stat-sub">Total des titres proposés</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-label">Votes totaux</div>
+                        <div class="stat-icon">❤️</div>
+                    </div>
+                    <div id="stat-votes" class="stat-value">0</div>
+                    <div class="stat-sub">Somme de tous les votes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-label">Musiques jouées</div>
+                        <div class="stat-icon">✅</div>
+                    </div>
+                    <div id="stat-played" class="stat-value">0</div>
+                    <div class="stat-sub">Titres déjà passés</div>
+                </div>
+            </div>
+
+            <!-- ACTION BAR -->
+            <div class="actions-bar">
+                <div class="actions-left">
+                    <button id="btn-refresh" class="btn">
+                        <span class="icon">🔄</span>
+                        <span>Actualiser</span>
+                    </button>
+                    <button id="btn-auto-refresh" class="btn">
+                        <span class="icon">⏱️</span>
+                        <span>Auto (15s)</span>
+                    </button>
+                </div>
+                <div class="actions-right">
+                    <input
+                        id="search-input"
+                        class="search-input"
+                        type="text"
+                        placeholder="🔍 Rechercher titre, artiste, pseudo..."
+                    />
+                    <select id="sort-select" class="select-input">
+                        <option value="votes-desc">⬆️ Plus de votes</option>
+                        <option value="recent">⬆️ Plus récentes</option>
+                        <option value="oldest">⬆️ Plus anciennes</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- FILTERS -->
+            <div class="filters-row">
+                <button class="filter-pill filter-pill-active" data-filter="all">Toutes</button>
+                <button class="filter-pill" data-filter="to_play">À jouer</button>
+                <button class="filter-pill" data-filter="played">Jouées</button>
+                <button class="filter-pill" data-filter="no_link">Sans lien</button>
+                <button class="filter-pill" data-filter="with_link">Avec lien</button>
+            </div>
+
+            <!-- SUGGESTIONS LIST -->
+            <section class="suggestions-section">
+                <div class="suggestions-header">
+                    <div class="suggestions-title">File de lecture</div>
+                    <div class="suggestions-count">
+                        <span id="suggestions-visible-count">0</span> affichées
+                    </div>
+                </div>
+                <div id="suggestions-list" class="suggestions-list">
+                    <!-- Cartes de suggestions générées en JS -->
+                </div>
+            </section>
+        </section>
+
+        <!-- RIGHT COLUMN: TOP 5 + GRAPH -->
+        <aside class="side-panel">
+            <!-- TOP 5 -->
+            <div class="side-card">
+                <div class="side-card-header">
+                    <div class="side-card-title">
+                        <span class="icon">⭐</span>
+                        <span>Top 5 musiques</span>
+                    </div>
+                    <div class="side-card-sub">
+                        Les plus votées
+                    </div>
+                </div>
+                <div id="top5-list" class="top5-list">
+                    <!-- Items Top 5 générés en JS -->
+                </div>
+            </div>
+
+            <!-- SIMPLE VOTES GRAPH -->
+            <div class="side-card">
+                <div class="side-card-header">
+                    <div class="side-card-title">
+                        <span class="icon">📊</span>
+                        <span>Votes</span>
+                    </div>
+                    <div class="side-card-sub">
+                        Aperçu rapide des titres qui plaisent
+                    </div>
+                </div>
+                <div id="chart-container" class="chart-container">
+                    <!-- Bar chart généré en JS -->
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- FOOTER ACTIONS -->
+    <footer class="footer-actions">
+        <button id="btn-delete-all" class="btn btn-danger-outline">
+            <span class="icon">🗑️</span>
+            <span>Tout effacer</span>
+        </button>
+    </footer>
+</div>
+
+<!-- MODAL CONFIRM DELETE ALL -->
+<div id="modal-backdrop" class="modal-backdrop">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="icon">🗑️</span>
+            <div class="modal-title">Effacer toutes les musiques ?</div>
+        </div>
+        <div class="modal-body">
+            Tu es sur le point de supprimer <strong>toutes</strong> les suggestions de la soirée.<br /><br />
+            Cette action est définitive pour la session JSONBin actuelle.<br />
+            Confirme uniquement si tu es sûr de vouloir repartir de zéro.
+        </div>
+        <div class="modal-footer">
+            <button id="modal-cancel" class="btn">
+                Annuler
+            </button>
+            <button id="modal-confirm" class="btn btn-delete">
+                Oui, tout effacer
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ------------------------------------------------------------
+    // CONFIG JSONBIN
+    // ------------------------------------------------------------
+
+    /**
+     * IMPORTANT :
+     * Remplace ces constantes par tes valeurs JSONBin.
+     * BIN_ID : l'identifiant de ton bin
+     * API_KEY : ta clé API (X-Master-Key)
+     */
+    const BIN_ID = "6a4260f4da38895dfe0fb93e";
+    const API_KEY = "$2a$10$JMtaTZvVsh7DqVnO5nSrRO3phGsvXdWV9iGfF4PtO4bVszpNpJsn2";
+
+    // URL de base JSONBin (v3)
+    const JSONBIN_BASE_URL = "https://api.jsonbin.io/v3/b/";
+
+    // ------------------------------------------------------------
+    // ÉTAT LOCAL DE L'APPLICATION
+    // ------------------------------------------------------------
+
+    /**
+     * Structure attendue dans JSONBin :
+     * {
+     *   "suggestions": [
+     *      {
+     *        "id": "unique-id",
+     *        "title": "Titre",
+     *        "artist": "Artiste",
+     *        "proposedBy": "Pseudo",
+     *        "time": "2026-06-29T20:00:00.000Z",
+     *        "votes": 12,
+     *        "link": "https://...",
+     *        "status": "to_play" | "played",
+     *        "inProgress": false
+     *      },
+     *      ...
+     *   ],
+     *   "participantsCount": 42,
+     *   "lastSync": "2026-06-29T20:00:00.000Z"
+     * }
+     */
+
+    let suggestions = [];           // Liste complète des suggestions
+    let participantsCount = 0;      // Nombre de personnes ayant participé
+    let lastSync = null;            // Date de dernière synchronisation
+    let autoRefreshEnabled = false; // Flag pour l'actualisation automatique
+    let autoRefreshTimer = null;    // Timer pour l'actualisation automatique
+    let currentFilter = "all";      // Filtre actif
+    let currentSort = "votes-desc"; // Tri actif
+    let searchQuery = "";           // Requête de recherche
+
+    // ------------------------------------------------------------
+    // UTILITAIRES
+    // ------------------------------------------------------------
+
+    /**
+     * Formate une date ISO en heure lisible (HH:MM).
+     */
+    function formatTime(isoString) {
+        if (!isoString) return "—";
+        const date = new Date(isoString);
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        return `${hours}h${minutes}`;
+    }
+
+    /**
+     * Formate une date ISO en format complet lisible.
+     */
+    function formatDateTime(isoString) {
+        if (!isoString) return "—";
+        const date = new Date(isoString);
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        return `${day}/${month}/${year} ${hours}h${minutes}`;
+    }
+
+    /**
+     * Calcule le nombre total de votes.
+     */
+    function computeTotalVotes(list) {
+        return list.reduce((sum, s) => sum + (Number(s.votes) || 0), 0);
+    }
+
+    /**
+     * Calcule le nombre de musiques jouées.
+     */
+    function computePlayedCount(list) {
+        return list.filter(s => s.status === "played").length;
+    }
+
+    /**
+     * Retourne la liste filtrée et triée selon l'état actuel.
+     */
+    function getVisibleSuggestions() {
+        let filtered = suggestions.slice();
+
+        // Filtre
+        filtered = filtered.filter(s => {
+            switch (currentFilter) {
+                case "to_play":
+                    return s.status !== "played";
+                case "played":
+                    return s.status === "played";
+                case "no_link":
+                    return !s.link;
+                case "with_link":
+                    return !!s.link;
+                case "all":
+                default:
+                    return true;
+            }
+        });
+
+        // Recherche
+        if (searchQuery.trim() !== "") {
+            const q = searchQuery.toLowerCase();
+            filtered = filtered.filter(s =>
+                (s.title || "").toLowerCase().includes(q) ||
+                (s.artist || "").toLowerCase().includes(q) ||
+                (s.proposedBy || "").toLowerCase().includes(q)
+            );
+        }
+
+        // Tri
+        filtered.sort((a, b) => {
+            if (currentSort === "votes-desc") {
+                return (Number(b.votes) || 0) - (Number(a.votes) || 0);
+            } else if (currentSort === "recent") {
+                return new Date(b.time || 0) - new Date(a.time || 0);
+            } else if (currentSort === "oldest") {
+                return new Date(a.time || 0) - new Date(b.time || 0);
+            }
+            return 0;
+        });
+
+        // Gestion de la musique "En cours" : toujours en haut
+        const current = filtered.filter(s => s.inProgress);
+        const others = filtered.filter(s => !s.inProgress);
+
+        return [...current, ...others];
+    }
+
+    /**
+     * Retourne les 5 musiques les plus votées.
+     */
+    function getTop5Suggestions() {
+        const sorted = suggestions.slice().sort((a, b) => {
+            return (Number(b.votes) || 0) - (Number(a.votes) || 0);
+        });
+        return sorted.slice(0, 5);
+    }
+
+    /**
+     * Met à jour l'affichage de la dernière synchronisation.
+     */
+    function updateLastSyncDisplay() {
+        const el = document.getElementById("last-sync");
+        el.textContent = lastSync ? formatDateTime(lastSync) : "—";
+    }
+
+    /**
+     * Met à jour les statistiques globales.
+     */
+    function updateStats() {
+        const totalSuggestions = suggestions.length;
+        const totalVotes = computeTotalVotes(suggestions);
+        const playedCount = computePlayedCount(suggestions);
+
+        document.getElementById("stat-suggestions").textContent = totalSuggestions;
+        document.getElementById("stat-votes").textContent = totalVotes;
+        document.getElementById("stat-played").textContent = playedCount;
+
+        document.getElementById("participants-count").textContent = participantsCount || 0;
+    }
+
+    /**
+     * Met à jour le Top 5.
+     */
+    function renderTop5() {
+        const container = document.getElementById("top5-list");
+        container.innerHTML = "";
+
+        const top5 = getTop5Suggestions();
+
+        if (top5.length === 0) {
+            const empty = document.createElement("div");
+            empty.textContent = "Aucune musique pour le moment.";
+            empty.style.fontSize = "0.8rem";
+            empty.style.color = "#b9a58b";
+            container.appendChild(empty);
+            return;
+        }
+
+        top5.forEach(s => {
+            const item = document.createElement("div");
+            item.className = "top5-item";
+
+            const main = document.createElement("div");
+            main.className = "top5-main";
+
+            const title = document.createElement("div");
+            title.className = "top5-title";
+            title.textContent = s.title || "Titre inconnu";
+
+            const artist = document.createElement("div");
+            artist.className = "top5-artist";
+            artist.textContent = s.artist || "Artiste inconnu";
+
+            main.appendChild(title);
+            main.appendChild(artist);
+
+            const votes = document.createElement("div");
+            votes.className = "top5-votes";
+            votes.textContent = `❤️ ${s.votes || 0}`;
+
+            item.appendChild(main);
+            item.appendChild(votes);
+
+            container.appendChild(item);
+        });
+    }
+
+    /**
+     * Met à jour le graphique simple des votes.
+     * On affiche les 5 premiers titres visibles avec une barre proportionnelle.
+     */
+    function renderChart() {
+        const container = document.getElementById("chart-container");
+        container.innerHTML = "";
+
+        const visible = getVisibleSuggestions();
+        const subset = visible.slice(0, 5);
+
+        if (subset.length === 0) {
+            const empty = document.createElement("div");
+            empty.textContent = "Aucun vote à afficher.";
+            empty.style.fontSize = "0.8rem";
+            empty.style.color = "#b9a58b";
+            container.appendChild(empty);
+            return;
+        }
+
+        const maxVotes = subset.reduce((max, s) => {
+            const v = Number(s.votes) || 0;
+            return v > max ? v : max;
+        }, 0) || 1;
+
+        subset.forEach(s => {
+            const row = document.createElement("div");
+            row.className = "chart-row";
+
+            const label = document.createElement("div");
+            label.className = "chart-label";
+            label.textContent = (s.title || "Titre").slice(0, 10);
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "chart-bar-wrapper";
+
+            const bar = document.createElement("div");
+            bar.className = "chart-bar";
+
+            const value = document.createElement("div");
+            value.className = "chart-value";
+            value.textContent = s.votes || 0;
+
+            const percent = Math.round(((Number(s.votes) || 0) / maxVotes) * 100);
+            // On applique la largeur après un petit délai pour l'animation
+            setTimeout(() => {
+                bar.style.width = `${percent}%`;
+            }, 30);
+
+            wrapper.appendChild(bar);
+            row.appendChild(label);
+            row.appendChild(wrapper);
+            row.appendChild(value);
+
+            container.appendChild(row);
+        });
+    }
+
+    /**
+     * Rend la liste des suggestions.
+     */
+    function renderSuggestionsList() {
+        const listEl = document.getElementById("suggestions-list");
+        listEl.innerHTML = "";
+
+        const visible = getVisibleSuggestions();
+        document.getElementById("suggestions-visible-count").textContent = visible.length;
+
+        if (visible.length === 0) {
+            const empty = document.createElement("div");
+            empty.textContent = "Aucune suggestion pour le moment.";
+            empty.style.fontSize = "0.85rem";
+            empty.style.color = "#b9a58b";
+            empty.style.padding = "8px 4px";
+            listEl.appendChild(empty);
+            return;
+        }
+
+        visible.forEach(s => {
+            const card = document.createElement("article");
+            card.className = "suggestion-card fade-enter";
+
+            if (s.status === "played") {
+                card.classList.add("suggestion-card-played");
+            }
+            if (s.inProgress) {
+                card.classList.add("suggestion-card-current");
+            }
+
+            // Votes
+            const votesEl = document.createElement("div");
+            votesEl.className = "suggestion-votes";
+
+            const votesIcon = document.createElement("div");
+            votesIcon.className = "suggestion-votes-icon";
+            votesIcon.textContent = "❤️";
+
+            const votesCount = document.createElement("div");
+            votesCount.className = "suggestion-votes-count";
+            votesCount.textContent = s.votes || 0;
+
+            votesEl.appendChild(votesIcon);
+            votesEl.appendChild(votesCount);
+
+            // Main info
+            const mainEl = document.createElement("div");
+            mainEl.className = "suggestion-main";
+
+            const titleRow = document.createElement("div");
+            titleRow.className = "suggestion-title-row";
+
+            const titleEl = document.createElement("div");
+            titleEl.className = "suggestion-title";
+            titleEl.textContent = s.title || "Titre inconnu";
+
+            const artistEl = document.createElement("div");
+            artistEl.className = "suggestion-artist";
+            artistEl.textContent = s.artist || "Artiste inconnu";
+
+            titleRow.appendChild(titleEl);
+            titleRow.appendChild(artistEl);
+
+            const metaRow = document.createElement("div");
+            metaRow.className = "suggestion-meta-row";
+
+            const metaProposed = document.createElement("div");
+            metaProposed.className = "suggestion-meta-item";
+            metaProposed.innerHTML = `<span>👤</span><span>${s.proposedBy || "Anonyme"}</span>`;
+
+            const metaTime = document.createElement("div");
+            metaTime.className = "suggestion-meta-item";
+            metaTime.innerHTML = `<span>🕒</span><span>${formatTime(s.time)}</span>`;
+
+            metaRow.appendChild(metaProposed);
+            metaRow.appendChild(metaTime);
+
+            if (s.link) {
+                const metaLink = document.createElement("a");
+                metaLink.className = "suggestion-link";
+                metaLink.href = s.link;
+                metaLink.target = "_blank";
+                metaLink.rel = "noopener noreferrer";
+                metaLink.innerHTML = `<span>🔗</span><span>Ouvrir</span>`;
+                metaRow.appendChild(metaLink);
+            }
+
+            mainEl.appendChild(titleRow);
+            mainEl.appendChild(metaRow);
+
+            // Actions
+            const actionsEl = document.createElement("div");
+            actionsEl.className = "suggestion-actions";
+
+            const btnPlayed = document.createElement("button");
+            btnPlayed.className = "btn btn-small btn-played";
+            btnPlayed.innerHTML = `<span class="icon">✅</span><span>Jouée</span>`;
+            btnPlayed.addEventListener("click", () => markAsPlayed(s.id));
+
+            const btnToPlay = document.createElement("button");
+            btnToPlay.className = "btn btn-small";
+            btnToPlay.innerHTML = `<span class="icon">↩️</span><span>Remettre à jouer</span>`;
+            btnToPlay.addEventListener("click", () => markAsToPlay(s.id));
+
+            const btnCurrent = document.createElement("button");
+            btnCurrent.className = "btn btn-small btn-current";
+            btnCurrent.innerHTML = `<span class="icon">📌</span><span>En cours</span>`;
+            btnCurrent.addEventListener("click", () => markAsCurrent(s.id));
+
+            const btnDelete = document.createElement("button");
+            btnDelete.className = "btn btn-small btn-delete";
+            btnDelete.innerHTML = `<span class="icon">🗑️</span><span>Supprimer</span>`;
+            btnDelete.addEventListener("click", () => deleteSuggestion(s.id));
+
+            actionsEl.appendChild(btnPlayed);
+            actionsEl.appendChild(btnToPlay);
+            actionsEl.appendChild(btnCurrent);
+            actionsEl.appendChild(btnDelete);
+
+            // Badges
+            if (s.status === "played") {
+                const badgePlayed = document.createElement("div");
+                badgePlayed.className = "suggestion-badge-played";
+                badgePlayed.innerHTML = `<span>✔</span><span>Jouée</span>`;
+                card.appendChild(badgePlayed);
+            }
+
+            if (s.inProgress) {
+                const badgeCurrent = document.createElement("div");
+                badgeCurrent.className = "suggestion-badge-current";
+                badgeCurrent.innerHTML = `<span>📌</span><span>En cours</span>`;
+                card.appendChild(badgeCurrent);
+            }
+
+            card.appendChild(votesEl);
+            card.appendChild(mainEl);
+            card.appendChild(actionsEl);
+
+            // Animation d'entrée
+            requestAnimationFrame(() => {
+                card.classList.remove("fade-enter");
+                card.classList.add("fade-enter-active");
+            });
+
+            listEl.appendChild(card);
+        });
+
+        // Met à jour le graphique après le rendu
+        renderChart();
+    }
+
+    // ------------------------------------------------------------
+    // ACTIONS SUR LES SUGGESTIONS
+    // ------------------------------------------------------------
+
+    /**
+     * Marque une suggestion comme jouée.
+     */
+    function markAsPlayed(id) {
+        suggestions = suggestions.map(s => {
+            if (s.id === id) {
+                return { ...s, status: "played" };
+            }
+            return s;
+        });
+        // On force la musique jouée à descendre (tri par date ou votes géré par getVisibleSuggestions)
+        saveToJSONBin().then(() => {
+            updateStats();
+            renderTop5();
+            renderSuggestionsList();
+        });
+    }
+
+    /**
+     * Remet une suggestion "à jouer".
+     */
+    function markAsToPlay(id) {
+        suggestions = suggestions.map(s => {
+            if (s.id === id) {
+                return { ...s, status: "to_play" };
+            }
+            return s;
+        });
+        saveToJSONBin().then(() => {
+            updateStats();
+            renderTop5();
+            renderSuggestionsList();
+        });
+    }
+
+    /**
+     * Marque une suggestion comme "En cours".
+     * Une seule musique peut être en cours.
+     */
+    function markAsCurrent(id) {
+        suggestions = suggestions.map(s => {
+            if (s.id === id) {
+                return { ...s, inProgress: true };
+            }
+            return { ...s, inProgress: false };
+        });
+        saveToJSONBin().then(() => {
+            updateStats();
+            renderTop5();
+            renderSuggestionsList();
+        });
+    }
+
+    /**
+     * Supprime une suggestion.
+     */
+    function deleteSuggestion(id) {
+        suggestions = suggestions.filter(s => s.id !== id);
+        saveToJSONBin().then(() => {
+            updateStats();
+            renderTop5();
+            renderSuggestionsList();
+        });
+    }
+
+    /**
+     * Supprime toutes les suggestions.
+     */
+    function deleteAllSuggestions() {
+        suggestions = [];
+        participantsCount = 0;
+        saveToJSONBin().then(() => {
+            updateStats();
+            renderTop5();
+            renderSuggestionsList();
+        });
+    }
+
+    // ------------------------------------------------------------
+    // JSONBIN : CHARGEMENT & SAUVEGARDE
+    // ------------------------------------------------------------
+
+    /**
+     * Charge les données depuis JSONBin.
+     */
+    async function loadFromJSONBin() {
+        if (!BIN_ID || !API_KEY) {
+            console.warn("BIN_ID ou API_KEY non configurés. Le mode JSONBin ne fonctionnera pas.");
+            return;
+        }
+
+        try {
+            const url = `${JSONBIN_BASE_URL}${BIN_ID}/latest`;
+            const res = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "X-Master-Key": API_KEY,
+                    "X-Bin-Meta": "false"
+                }
+            });
+
+            if (!res.ok) {
+                console.error("Erreur JSONBin (GET)", res.status, res.statusText);
+                return;
+            }
+
+            const data = await res.json();
+            const record = data.record || {};
+
+            suggestions = Array.isArray(record.suggestions) ? record.suggestions : [];
+            participantsCount = Number(record.participantsCount) || 0;
+            lastSync = record.lastSync || new Date().toISOString();
+
+            updateLastSyncDisplay();
+            updateStats();
+            renderTop5();
+            renderSuggestionsList();
+        } catch (err) {
+            console.error("Erreur lors du chargement JSONBin :", err);
+        }
+    }
+
+    /**
+     * Sauvegarde les données dans JSONBin.
+     */
+    async function saveToJSONBin() {
+        if (!BIN_ID || !API_KEY) {
+            console.warn("BIN_ID ou API_KEY non configurés. Sauvegarde JSONBin ignorée.");
+            return;
+        }
+
+        try {
+            const url = `${JSONBIN_BASE_URL}${BIN_ID}`;
+            lastSync = new Date().toISOString();
+
+            const payload = {
+                suggestions,
+                participantsCount,
+                lastSync
+            };
+
+            const res = await fetch(url, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Master-Key": API_KEY
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                console.error("Erreur JSONBin (PUT)", res.status, res.statusText);
+                return;
+            }
+
+            updateLastSyncDisplay();
+        } catch (err) {
+            console.error("Erreur lors de la sauvegarde JSONBin :", err);
+        }
+    }
+
+    // ------------------------------------------------------------
+    // GESTION AUTO-REFRESH
+    // ------------------------------------------------------------
+
+    /**
+     * Active ou désactive l'actualisation automatique.
+     */
+    function toggleAutoRefresh() {
+        autoRefreshEnabled = !autoRefreshEnabled;
+        const btn = document.getElementById("btn-auto-refresh");
+
+        if (autoRefreshEnabled) {
+            btn.classList.add("btn-toggle-active");
+            startAutoRefresh();
+        } else {
+            btn.classList.remove("btn-toggle-active");
+            stopAutoRefresh();
+        }
+    }
+
+    /**
+     * Démarre l'actualisation automatique toutes les 15 secondes.
+     */
+    function startAutoRefresh() {
+        stopAutoRefresh();
+        autoRefreshTimer = setInterval(() => {
+            loadFromJSONBin();
+        }, 15000);
+    }
+
+    /**
+     * Arrête l'actualisation automatique.
+     */
+    function stopAutoRefresh() {
+        if (autoRefreshTimer) {
+            clearInterval(autoRefreshTimer);
+            autoRefreshTimer = null;
+        }
+    }
+
+    // ------------------------------------------------------------
+    // MODAL CONFIRMATION
+    // ------------------------------------------------------------
+
+    function openDeleteAllModal() {
+        const backdrop = document.getElementById("modal-backdrop");
+        backdrop.classList.add("modal-backdrop-visible");
+    }
+
+    function closeDeleteAllModal() {
+        const backdrop = document.getElementById("modal-backdrop");
+        backdrop.classList.remove("modal-backdrop-visible");
+    }
+
+    // ------------------------------------------------------------
+    // INITIALISATION & ÉVÉNEMENTS
+    // ------------------------------------------------------------
+
+    function initEvents() {
+        // Bouton Actualiser
+        document.getElementById("btn-refresh").addEventListener("click", () => {
+            loadFromJSONBin();
+        });
+
+        // Bouton Auto-refresh
+        document.getElementById("btn-auto-refresh").addEventListener("click", () => {
+            toggleAutoRefresh();
+        });
+
+        // Barre de recherche
+        document.getElementById("search-input").addEventListener("input", (e) => {
+            searchQuery = e.target.value || "";
+            renderSuggestionsList();
+        });
+
+        // Tri
+        document.getElementById("sort-select").addEventListener("change", (e) => {
+            currentSort = e.target.value || "votes-desc";
+            renderSuggestionsList();
+        });
+
+        // Filtres
+        const filterButtons = document.querySelectorAll(".filter-pill");
+        filterButtons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const filter = btn.getAttribute("data-filter");
+                currentFilter = filter || "all";
+
+                filterButtons.forEach(b => b.classList.remove("filter-pill-active"));
+                btn.classList.add("filter-pill-active");
+
+                renderSuggestionsList();
+            });
+        });
+
+        // Bouton "Tout effacer"
+        document.getElementById("btn-delete-all").addEventListener("click", () => {
+            openDeleteAllModal();
+        });
+
+        // Modal : Annuler
+        document.getElementById("modal-cancel").addEventListener("click", () => {
+            closeDeleteAllModal();
+        });
+
+        // Modal : Confirmer
+        document.getElementById("modal-confirm").addEventListener("click", () => {
+            closeDeleteAllModal();
+            deleteAllSuggestions();
+        });
+
+        // Fermeture modal par clic sur le backdrop
+        document.getElementById("modal-backdrop").addEventListener("click", (e) => {
+            if (e.target.id === "modal-backdrop") {
+                closeDeleteAllModal();
+            }
+        });
+    }
+
+    /**
+     * Initialisation de l'application.
+     */
+    function initApp() {
+        initEvents();
+        loadFromJSONBin();
+    }
+
+    // Lancement
+    document.addEventListener("DOMContentLoaded", initApp);
+</script>
+</body>
+</html>
