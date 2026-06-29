@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Anniversaire Far West – Propose une musique au DJ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- =========================
+       STYLES (INLINE CSS)
+       ========================= -->
+  <style>
+    /* -------------------------
+       RESET & BASE
+       ------------------------- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, sans-serif;
+      background: #1b130d;
+      color: #f5e3c8;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    :root {
+      --bg-main: #1b130d;
+      --bg-panel: #2a1c12;
+      --bg-card: #3a2617;
+      --accent-gold: #d9a441;
+      --accent-red: #c94b3b;
+      --accent-green: #4caf50;
+      --accent-soft: #f5e3c8;
+      --border-wood: #5b3b23;
+      --text-main: #f5e3c8;
+      --text-muted: #c0aa86;
+      --shadow-soft: 0 14px 40px rgba(0, 0, 0, 0.6);
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --transition-fast: 0.2s ease-out;
+      --transition-med: 0.35s ease-out;
+    }
+
+    /* -------------------------
+       WANTED SPLASH SCREEN
+       ------------------------- */
+    .wanted-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, #3b2717 0%, #120b07 70%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      overflow: hidden;
+    }
+
+    .wanted-poster {
+      position: relative;
+      width: min(420px, 90vw);
+      height: auto;
+      padding: 32px 24px;
+      background: #f5e3c8;
+      color: #2b1b10;
+      border-radius: 6px;
+      border: 4px solid #b58b55;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+      text-align: center;
+      font-family: "Georgia", "Times New Roman", serif;
+      letter-spacing: 0.08em;
+      transform-origin: center;
+      animation: poster-enter 0.9s ease-out forwards;
+    }
+
+    .wanted-poster::before,
+    .wanted-poster::after {
+      content: "";
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 3px dashed rgba(0, 0, 0, 0.2);
+      top: -30px;
+      left: -30px;
+      transform: rotate(-12deg);
+    }
+
+    .wanted-poster::after {
+      top: auto;
+      left: auto;
+      bottom: -30px;
+      right: -30px;
+      transform: rotate(10deg);
+    }
+
+    .wanted-title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .wanted-subtitle {
+      font-size: 1rem;
+      margin-bottom: 16px;
+    }
+
+    .wanted-reward {
+      margin-top: 18px;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .wanted-emoji {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    @keyframes poster-enter {
+      0% {
+        opacity: 0;
+        transform: scale(0.7) rotate(-4deg);
+        filter: blur(6px);
+      }
+      60% {
+        opacity: 1;
+        transform: scale(1.05) rotate(2deg);
+        filter: blur(0);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+      }
+    }
+
+    @keyframes poster-exit {
+      0% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(0.85) translateY(-40px);
+      }
+    }
+
+    .wanted-overlay.hide {
+      animation: overlay-fade 0.6s ease-out forwards;
+    }
+
+    @keyframes overlay-fade {
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+
+    /* -------------------------
+       MAIN LAYOUT
+       ------------------------- */
+    .app-root {
+      width: 100%;
+      max-width: 960px;
+      background: radial-gradient(circle at top, #3b2717 0%, #1b130d 55%, #0c0704 100%);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      box-shadow: var(--shadow-soft);
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Rope effect around the panel */
+    .app-root::before {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border-radius: var(--radius-lg);
+      border: 4px dashed rgba(217, 164, 65, 0.4);
+      pointer-events: none;
+    }
+
+    .app-inner {
+      position: relative;
+      z-index: 1;
+      background: linear-gradient(135deg, rgba(58, 38, 23, 0.96), rgba(34, 21, 13, 0.98));
+      border-radius: calc(var(--radius-lg) - 4px);
+      padding: 18px 16px 20px;
+    }
+
+    /* -------------------------
+       HEADER
+       ------------------------- */
+    .header {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .badge-saloon {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(217, 164, 65, 0.6);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.8);
+    }
+
+    .sheriff-star {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--accent-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #f5e3c8 0%, #b58b55 55%, #5b3b23 100%);
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.6);
+      position: relative;
+      transform: rotate(12deg);
+    }
+
+    .sheriff-star::before,
+    .sheriff-star::after {
+      content: "";
+      position: absolute;
+      width: 2px;
+      height: 26px;
+      background: #5b3b23;
+      border-radius: 999px;
+    }
+
+    .sheriff-star::before {
+      transform: rotate(60deg);
+    }
+
+    .sheriff-star::after {
+      transform: rotate(-60deg);
+    }
+
+    .sheriff-star span {
+      font-size: 1.1rem;
+      transform: rotate(-12deg);
+    }
+
+    .title-block {
+      text-align: left;
+    }
+
+    .title-main {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-main span.emoji {
+      font-size: 1.6rem;
+    }
+
+    .title-names {
+      margin-top: 4px;
+      font-size: 1rem;
+      color: var(--accent-soft);
+      line-height: 1.4;
+    }
+
+    .title-names strong {
+      color: var(--accent-gold);
+      font-weight: 700;
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    .subtitle span {
+      color: var(--accent-red);
+      font-weight: 600;
+    }
+
+    /* -------------------------
+       FORM SECTION
+       ------------------------- */
+    .layout-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr);
+      gap: 18px;
+    }
+
+    @media (max-width: 768px) {
+      .layout-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .panel {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 14px 14px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.04),
+          transparent 40%,
+          transparent 60%,
+          rgba(0, 0, 0, 0.4)
+        ),
+        url("https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=800&q=60");
+      background-size: cover;
+      background-position: center;
+      opacity: 0.08;
+      mix-blend-mode: soft-light;
+      pointer-events: none;
+    }
+
+    .panel-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-title span.emoji {
+      font-size: 1.3rem;
+    }
+
+    .panel-description {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    /* Form fields */
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    .form-label {
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent-soft);
+    }
+
+    .form-label span.optional {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.35);
+      color: var(--text-main);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
+        background var(--transition-fast), transform var(--transition-fast);
+    }
+
+    .input-field::placeholder {
+      color: rgba(192, 170, 134, 0.7);
+    }
+
+    .input-field:focus {
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 0 1px rgba(217, 164, 65, 0.6);
+      background: rgba(0, 0, 0, 0.55);
+      transform: translateY(-1px);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .input-row > div {
+      flex: 1;
+    }
+
+    /* Helper / duplicate message */
+    .helper-message {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: var(--accent-red);
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(201, 75, 59, 0.12);
+      border-radius: var(--radius-sm);
+      padding: 6px 8px;
+      border: 1px solid rgba(201, 75, 59, 0.4);
+    }
+
+    .helper-message span {
+      flex: 1;
+    }
+
+    .btn-scroll-to-song {
+      flex-shrink: 0;
+      font-size: 0.8rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(217, 164, 65, 0.9);
+      color: #2b1b10;
+      cursor: pointer;
+      transition: background var(--transition-fast), transform var(--transition-fast);
+    }
+
+    .btn-scroll-to-song:hover {
+      background: rgba(217, 164, 65, 1);
+      transform: translateY(-1px);
+    }
+
+    /* Submit button */
+    .btn-submit {
+      margin-top: 10px;
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #d9a441, #b56c2b);
+      color: #2b1b10;
+      font-weight: 700;
+      font-size: 1rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6);
+      transition: transform var(--transition-med), box-shadow var(--transition-med),
+        filter var(--transition-med);
+    }
+
+    .btn-submit span.emoji {
+      font-size: 1.3rem;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.7);
+      filter: brightness(1.05);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.7);
+      filter: brightness(0.98);
+    }
+
+    .form-footer-note {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* -------------------------
+       SHERIFF STAR ANIMATION (AFTER SUBMIT)
+       ------------------------- */
+    .submit-feedback {
+      margin-top: 12px;
+      padding: 10px 10px;
+      border-radius: var(--radius-md);
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(217, 164, 65, 0.4);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .submit-feedback.show {
+      display: flex;
+      animation: feedback-fade-in 0.4s ease-out forwards;
+    }
+
+    @keyframes feedback-fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .feedback-star {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 2px solid var(--accent-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #f5e3c8 0%, #d9a441 50%, #5b3b23 100%);
+      box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.7);
+      position: relative;
+      animation: star-pulse 1.2s ease-out infinite;
+    }
+
+    .feedback-star::before,
+    .feedback-star::after {
+      content: "";
+      position: absolute;
+      width: 2px;
+      height: 32px;
+      background: #5b3b23;
+      border-radius: 999px;
+    }
+
+    .feedback-star::before {
+      transform: rotate(60deg);
+    }
+
+    .feedback-star::after {
+      transform: rotate(-60deg);
+    }
+
+    .feedback-star span {
+      font-size: 1.4rem;
+    }
+
+    @keyframes star-pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 4px rgba(217, 164, 65, 0.2);
+      }
+      50% {
+        transform: scale(1.08);
+        box-shadow: 0 0 0 8px rgba(217, 164, 65, 0.4);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 4px rgba(217, 164, 65, 0.2);
+      }
+    }
+
+    .feedback-text-main {
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .feedback-text-sub {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* -------------------------
+       LIST SECTION
+       ------------------------- */
+    .panel-list-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .panel-list-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-list-title span.emoji {
+      font-size: 1.2rem;
+    }
+
+    .list-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    .search-input {
+      margin-bottom: 10px;
+    }
+
+    .search-input .input-field {
+      font-size: 0.85rem;
+    }
+
+    .songs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .songs-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .songs-list::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 999px;
+    }
+
+    .songs-list::-webkit-scrollbar-thumb {
+      background: rgba(217, 164, 65, 0.7);
+      border-radius: 999px;
+    }
+
+    .song-card {
+      position: relative;
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 10px 10px 10px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast),
+        border-color var(--transition-fast), background var(--transition-fast);
+    }
+
+    .song-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.7);
+      border-color: rgba(217, 164, 65, 0.6);
+      background: #4a301d;
+    }
+
+    .song-votes {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      min-width: 60px;
+    }
+
+    .song-votes-count {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--accent-soft);
+    }
+
+    .song-votes-label {
+      font-size: 0.75rem;
+      color: var(--accent-red);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .song-votes-label span.emoji {
+      font-size: 0.9rem;
+    }
+
+    .song-main {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .song-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--accent-soft);
+    }
+
+    .song-artist {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .song-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .song-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .song-meta a {
+      color: var(--accent-gold);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .song-meta a:hover {
+      text-decoration: underline;
+    }
+
+    .song-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .btn-vote {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(217, 164, 65, 0.9);
+      color: #2b1b10;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: background var(--transition-fast), transform var(--transition-fast),
+        box-shadow var(--transition-fast);
+    }
+
+    .btn-vote span.emoji {
+      font-size: 1rem;
+    }
+
+    .btn-vote:hover {
+      background: rgba(217, 164, 65, 1);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.6);
+    }
+
+    .btn-vote:active {
+      transform: translateY(0);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.7);
+    }
+
+    .song-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 12px 8px;
+      border-radius: var(--radius-md);
+      border: 1px dashed rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    /* -------------------------
+       RESPONSIVE TWEAKS
+       ------------------------- */
+    @media (max-width: 600px) {
+      .app-root {
+        padding: 12px;
+      }
+
+      .app-inner {
+        padding: 14px 12px 16px;
+      }
+
+      .header-top {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+
+      .title-main {
+        font-size: 1.2rem;
+      }
+
+      .title-names {
+        font-size: 0.9rem;
+      }
+
+      .song-card {
+        grid-template-columns: 1fr;
+        align-items: flex-start;
+      }
+
+      .song-votes {
+        flex-direction: row;
+        justify-content: flex-start;
+      }
+
+      .song-actions {
+        flex-direction: row;
+        justify-content: flex-end;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .badge-saloon {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- =========================
+       WANTED SPLASH SCREEN
+       ========================= -->
+  <div class="wanted-overlay" id="wantedOverlay">
+    <div class="wanted-poster" id="wantedPoster">
+      <div class="wanted-emoji">🤠</div>
+      <div class="wanted-title">WANTED</div>
+      <div class="wanted-subtitle">
+        Le DJ recherche<br />
+        les meilleures musiques !
+      </div>
+      <div class="wanted-reward">
+        Récompense :<br />
+        <strong>Une soirée de folie !</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================
+       MAIN APP
+       ========================= -->
+  <div class="app-root" id="appRoot" style="opacity:0; pointer-events:none;">
+    <div class="app-inner">
+      <!-- HEADER -->
+      <header class="header">
+        <div class="header-top">
+          <div class="title-block">
+            <div class="title-main">
+              <span class="emoji">🤠</span>
+              <span>Anniversaire de</span>
+            </div>
+            <div class="title-names">
+              <strong>Cécile • 50 ans</strong><br />
+              &amp; <strong>Elouan • 20 ans</strong>
+            </div>
+            <div class="subtitle">
+              <span>🎵 Propose une musique !</span><br />
+              Le DJ la jouera si elle met le feu à la piste 🔥
+            </div>
+          </div>
+          <div class="header-right">
+            <div class="badge-saloon">
+              <span class="badge-dot"></span>
+              <span>Saloon connecté • DJ en ligne</span>
+            </div>
+            <div class="sheriff-star">
+              <span>★</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- MAIN GRID -->
+      <div class="layout-grid">
+        <!-- LEFT PANEL: FORM -->
+        <section class="panel">
+          <div class="panel-inner">
+            <div class="panel-title">
+              <span class="emoji">🎧</span>
+              <span>Envoyer ta musique au DJ</span>
+            </div>
+            <p class="panel-description">
+              Choisis une musique qui met l’ambiance Far West ou qui fait danser tout le monde.
+              Le DJ surveille le Saloon en temps réel.
+            </p>
+
+            <!-- FORM -->
+            <form id="songForm" autocomplete="off">
+              <!-- Titre -->
+              <div class="form-group">
+                <label class="form-label" for="titleInput">
+                  Titre de la musique
+                </label>
+                <input
+                  type="text"
+                  id="titleInput"
+                  class="input-field"
+                  placeholder="Ex. &quot;Ring of Fire&quot;"
+                  required
+                />
+              </div>
+
+              <!-- Artiste + Prénom -->
+              <div class="input-row">
+                <div class="form-group">
+                  <label class="form-label" for="artistInput">
+                    Artiste / Groupe
+                  </label>
+                  <input
+                    type="text"
+                    id="artistInput"
+                    class="input-field"
+                    placeholder="Ex. Johnny Cash"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="nameInput">
+                    Ton prénom <span class="optional">(optionnel)</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="nameInput"
+                    class="input-field"
+                    placeholder="Ex. &quot;Noa&quot;"
+                  />
+                </div>
+              </div>
+
+              <!-- Lien -->
+              <div class="form-group">
+                <label class="form-label" for="linkInput">
+                  Lien YouTube ou Spotify <span class="optional">(optionnel)</span>
+                </label>
+                <input
+                  type="url"
+                  id="linkInput"
+                  class="input-field"
+                  placeholder="Colle un lien si tu veux être précis"
+                />
+              </div>
+
+              <!-- Duplicate helper -->
+              <div class="helper-message" id="duplicateHelper">
+                <span>Cette musique existe déjà, tu peux simplement voter ❤️.</span>
+                <button type="button" class="btn-scroll-to-song" id="scrollToDuplicateBtn">
+                  Voir la musique
+                </button>
+              </div>
+
+              <!-- Submit button -->
+              <button type="submit" class="btn-submit" id="submitBtn">
+                <span class="emoji">🤠</span>
+                <span>Envoyer au DJ</span>
+              </button>
+
+              <p class="form-footer-note">
+                Ton message part directement au Saloon numérique. Le DJ choisira les musiques qui
+                mettent le feu à la piste !
+              </p>
+            </form>
+
+            <!-- Feedback after submit -->
+            <div class="submit-feedback" id="submitFeedback">
+              <div class="feedback-star">
+                <span>★</span>
+              </div>
+              <div class="feedback-text-main">🤠 Ta proposition est arrivée au Saloon !</div>
+              <div class="feedback-text-sub">
+                Le DJ l’a bien reçue. Bonne soirée !
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- RIGHT PANEL: LIST -->
+        <section class="panel">
+          <div class="panel-inner">
+            <div class="panel-list-header">
+              <div class="panel-list-title">
+                <span class="emoji">❤️</span>
+                <span>Musiques déjà proposées</span>
+              </div>
+              <div class="list-meta" id="listMeta">
+                Chargement des musiques...
+              </div>
+            </div>
+
+            <!-- Search -->
+            <div class="search-input">
+              <input
+                type="text"
+                id="searchInput"
+                class="input-field"
+                placeholder="Recherche une musique ou un artiste..."
+              />
+            </div>
+
+            <!-- Songs list -->
+            <div class="songs-list" id="songsList">
+              <!-- Cards will be injected here -->
+            </div>
+
+            <!-- Empty state -->
+            <div class="empty-state" id="emptyState" style="display:none;">
+              Aucune musique n’a encore été proposée.<br />
+              Sois le premier à lancer la playlist du Saloon !
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================
+       SCRIPTS (INLINE JS)
+       ========================= -->
+  <script>
+    // -----------------------------------
+    // CONFIGURATION JSONBIN
+    // -----------------------------------
+    // À RENSEIGNER AVANT MISE EN LIGNE :
+    // 1. Crée un bin sur JSONBin (structure: { "songs": [] })
+    // 2. Copie l'ID du bin et la clé API (X-Master-Key)
+    // 3. Remplace les constantes ci-dessous.
+    const BIN_ID = "TON_BIN_ID";
+    const API_KEY = "TON_API_KEY";
+
+    // URL de base JSONBin (API v3)
+    const JSONBIN_BASE_URL = "https://api.jsonbin.io/v3/b/";
+
+    // -----------------------------------
+    // ÉTAT LOCAL
+    // -----------------------------------
+    let songs = []; // Liste complète des musiques
+    let filteredSongs = []; // Liste filtrée (recherche)
+    let duplicateSongId = null; // ID de la musique détectée comme doublon
+
+    // -----------------------------------
+    // UTILITAIRES
+    // -----------------------------------
+
+    /**
+     * Normalise une chaîne pour comparaison (titre / artiste).
+     * - minuscule
+     * - trim
+     * - suppression des espaces multiples
+     */
+    function normalizeString(str) {
+      return (str || "")
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, " ");
+    }
+
+    /**
+     * Formate une date en heure lisible (HH:MM).
+     */
+    function formatTime(dateString) {
+      if (!dateString) return "";
+      const d = new Date(dateString);
+      const hours = String(d.getHours()).padStart(2, "0");
+      const minutes = String(d.getMinutes()).padStart(2, "0");
+      return `${hours}h${minutes}`;
+    }
+
+    /**
+     * Génère un ID simple pour une nouvelle musique.
+     * (On pourrait utiliser crypto.randomUUID si disponible.)
+     */
+    function generateSongId() {
+      return "song_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+    }
+
+    /**
+     * Met à jour le texte de meta (nombre de musiques).
+     */
+    function updateListMeta() {
+      const listMeta = document.getElementById("listMeta");
+      if (!songs || songs.length === 0) {
+        listMeta.textContent = "Aucune musique pour le moment.";
+      } else {
+        listMeta.textContent = `${songs.length} musique(s) • triées par votes`;
+      }
+    }
+
+    // -----------------------------------
+    // JSONBIN – FETCH & SAVE
+    // -----------------------------------
+
+    /**
+     * Récupère les musiques depuis JSONBin.
+     * Structure attendue : { "songs": [ ... ] }
+     */
+    async function fetchSongsFromBin() {
+      const url = `${JSONBIN_BASE_URL}${BIN_ID}/latest`;
+      try {
+        const res = await fetch(url, {
+          method: "GET",
+          headers: {
+            "X-Master-Key": API_KEY,
+          },
+        });
+
+        if (!res.ok) {
+          console.error("Erreur JSONBin (GET):", res.status, res.statusText);
+          return [];
+        }
+
+        const data = await res.json();
+        const record = data.record || {};
+        const binSongs = Array.isArray(record.songs) ? record.songs : [];
+        return binSongs;
+      } catch (err) {
+        console.error("Erreur réseau JSONBin (GET):", err);
+        return [];
+      }
+    }
+
+    /**
+     * Sauvegarde la liste complète des musiques dans JSONBin.
+     * On écrase le contenu du bin avec { songs: [...] }.
+     */
+    async function saveSongsToBin() {
+      const url = `${JSONBIN_BASE_URL}${BIN_ID}`;
+      const payload = {
+        songs: songs,
+      };
+
+      try {
+        const res = await fetch(url, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Master-Key": API_KEY,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          console.error("Erreur JSONBin (PUT):", res.status, res.statusText);
+        }
+      } catch (err) {
+        console.error("Erreur réseau JSONBin (PUT):", err);
+      }
+    }
+
+    // -----------------------------------
+    // RENDU DES CARTES
+    // -----------------------------------
+
+    /**
+     * Rend la liste des musiques dans le DOM.
+     * Utilise filteredSongs si une recherche est active.
+     */
+    function renderSongs() {
+      const listEl = document.getElementById("songsList");
+      const emptyStateEl = document.getElementById("emptyState");
+
+      // Tri par nombre de votes (descendant)
+      const baseList = filteredSongs.length ? filteredSongs : songs;
+      const sorted = [...baseList].sort((a, b) => (b.votes || 0) - (a.votes || 0));
+
+      listEl.innerHTML = "";
+
+      if (sorted.length === 0) {
+        emptyStateEl.style.display = "block";
+        return;
+      } else {
+        emptyStateEl.style.display = "none";
+      }
+
+      sorted.forEach((song) => {
+        const card = document.createElement("article");
+        card.className = "song-card";
+        card.dataset.songId = song.id;
+
+        // Votes
+        const votesCol = document.createElement("div");
+        votesCol.className = "song-votes";
+
+        const votesCount = document.createElement("div");
+        votesCount.className = "song-votes-count";
+        votesCount.textContent = song.votes || 0;
+
+        const votesLabel = document.createElement("div");
+        votesLabel.className = "song-votes-label";
+        votesLabel.innerHTML = `<span class="emoji">❤️</span><span>votes</span>`;
+
+        votesCol.appendChild(votesCount);
+        votesCol.appendChild(votesLabel);
+
+        // Main info
+        const mainCol = document.createElement("div");
+        mainCol.className = "song-main";
+
+        const titleEl = document.createElement("div");
+        titleEl.className = "song-title";
+        titleEl.textContent = song.title || "Titre inconnu";
+
+        const artistEl = document.createElement("div");
+        artistEl.className = "song-artist";
+        artistEl.textContent = song.artist || "Artiste inconnu";
+
+        const metaEl = document.createElement("div");
+        metaEl.className = "song-meta";
+
+        const proposer = document.createElement("span");
+        proposer.innerHTML = `Proposé par <strong>${song.name || "Anonyme"}</strong>`;
+
+        const time = document.createElement("span");
+        time.className = "song-time";
+        time.textContent = formatTime(song.createdAt) || "";
+
+        metaEl.appendChild(proposer);
+        if (song.link) {
+          const linkSpan = document.createElement("span");
+          const link = document.createElement("a");
+          link.href = song.link;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.textContent = "Lien";
+          linkSpan.appendChild(link);
+          metaEl.appendChild(linkSpan);
+        }
+        if (time.textContent) {
+          metaEl.appendChild(time);
+        }
+
+        mainCol.appendChild(titleEl);
+        mainCol.appendChild(artistEl);
+        mainCol.appendChild(metaEl);
+
+        // Actions
+        const actionsCol = document.createElement("div");
+        actionsCol.className = "song-actions";
+
+        const voteBtn = document.createElement("button");
+        voteBtn.type = "button";
+        voteBtn.className = "btn-vote";
+        voteBtn.innerHTML = `<span class="emoji">👍</span><span>Je veux aussi !</span>`;
+        voteBtn.addEventListener("click", () => handleVote(song.id));
+
+        actionsCol.appendChild(voteBtn);
+
+        card.appendChild(votesCol);
+        card.appendChild(mainCol);
+        card.appendChild(actionsCol);
+
+        listEl.appendChild(card);
+      });
+
+      updateListMeta();
+    }
+
+    /**
+     * Fait défiler jusqu'à une carte de musique par ID.
+     */
+    function scrollToSongById(songId) {
+      const listEl = document.getElementById("songsList");
+      const card = listEl.querySelector(`[data-song-id="${songId}"]`);
+      if (!card) return;
+
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+      card.style.outline = "2px solid rgba(217, 164, 65, 0.9)";
+      card.style.outlineOffset = "2px";
+
+      setTimeout(() => {
+        card.style.outline = "none";
+      }, 2000);
+    }
+
+    // -----------------------------------
+    // VOTE
+    // -----------------------------------
+
+    /**
+     * Gère le vote pour une musique.
+     * Incrémente le compteur local, sauvegarde dans JSONBin, puis rerend.
+     */
+    async function handleVote(songId) {
+      const songIndex = songs.findIndex((s) => s.id === songId);
+      if (songIndex === -1) return;
+
+      songs[songIndex].votes = (songs[songIndex].votes || 0) + 1;
+
+      // Sauvegarde dans JSONBin (sans bloquer l'UI)
+      renderSongs();
+      saveSongsToBin();
+    }
+
+    // -----------------------------------
+    // FORM – SUBMIT
+    // -----------------------------------
+
+    /**
+     * Vérifie si une musique existe déjà (titre + artiste).
+     * Retourne l'objet musique ou null.
+     */
+    function findDuplicateSong(title, artist) {
+      const normTitle = normalizeString(title);
+      const normArtist = normalizeString(artist);
+
+      return songs.find((song) => {
+        return (
+          normalizeString(song.title) === normTitle &&
+          normalizeString(song.artist) === normArtist
+        );
+      }) || null;
+    }
+
+    /**
+     * Affiche ou masque le message de doublon.
+     */
+    function setDuplicateHelper(songIdOrNull) {
+      const helper = document.getElementById("duplicateHelper");
+      duplicateSongId = songIdOrNull;
+
+      if (songIdOrNull) {
+        helper.style.display = "flex";
+      } else {
+        helper.style.display = "none";
+      }
+    }
+
+    /**
+     * Gère la soumission du formulaire.
+     */
+    async function handleFormSubmit(event) {
+      event.preventDefault();
+
+      const titleInput = document.getElementById("titleInput");
+      const artistInput = document.getElementById("artistInput");
+      const linkInput = document.getElementById("linkInput");
+      const nameInput = document.getElementById("nameInput");
+      const submitBtn = document.getElementById("submitBtn");
+      const feedbackEl = document.getElementById("submitFeedback");
+
+      const title = titleInput.value.trim();
+      const artist = artistInput.value.trim();
+      const link = linkInput.value.trim();
+      const name = nameInput.value.trim();
+
+      if (!title || !artist) {
+        return;
+      }
+
+      // Vérifie doublon
+      const duplicate = findDuplicateSong(title, artist);
+      if (duplicate) {
+        setDuplicateHelper(duplicate.id);
+        scrollToSongById(duplicate.id);
+        return;
+      }
+
+      // Prépare la nouvelle musique
+      const newSong = {
+        id: generateSongId(),
+        title,
+        artist,
+        link: link || "",
+        name: name || "",
+        votes: 0,
+        createdAt: new Date().toISOString(),
+      };
+
+      // Ajoute localement
+      songs.push(newSong);
+      filteredSongs = []; // reset filtre
+      renderSongs();
+      setDuplicateHelper(null);
+
+      // Désactive le bouton pendant la sauvegarde
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = "0.7";
+
+      // Sauvegarde dans JSONBin
+      await saveSongsToBin();
+
+      // Réactive le bouton
+      submitBtn.disabled = false;
+      submitBtn.style.opacity = "1";
+
+      // Réinitialise le formulaire
+      titleInput.value = "";
+      artistInput.value = "";
+      linkInput.value = "";
+      nameInput.value = "";
+
+      // Affiche le feedback
+      feedbackEl.classList.add("show");
+      setTimeout(() => {
+        feedbackEl.classList.remove("show");
+      }, 3500);
+    }
+
+    // -----------------------------------
+    // RECHERCHE
+    // -----------------------------------
+
+    /**
+     * Met à jour la liste filtrée en fonction du texte de recherche.
+     */
+    function handleSearchInput(event) {
+      const query = normalizeString(event.target.value);
+      if (!query) {
+        filteredSongs = [];
+        renderSongs();
+        return;
+      }
+
+      filteredSongs = songs.filter((song) => {
+        const title = normalizeString(song.title);
+        const artist = normalizeString(song.artist);
+        const name = normalizeString(song.name);
+        return (
+          title.includes(query) ||
+          artist.includes(query) ||
+          name.includes(query)
+        );
+      });
+
+      renderSongs();
+    }
+
+    /**
+     * Détection automatique de doublon pendant la saisie.
+     * Si titre + artiste correspondent à une musique existante, on affiche le helper.
+     */
+    function handleDuplicateDetection() {
+      const titleInput = document.getElementById("titleInput");
+      const artistInput = document.getElementById("artistInput");
+      const title = titleInput.value.trim();
+      const artist = artistInput.value.trim();
+
+      if (!title || !artist) {
+        setDuplicateHelper(null);
+        return;
+      }
+
+      const duplicate = findDuplicateSong(title, artist);
+      if (duplicate) {
+        setDuplicateHelper(duplicate.id);
+      } else {
+        setDuplicateHelper(null);
+      }
+    }
+
+    // -----------------------------------
+    // WANTED SPLASH – ANIMATION
+    // -----------------------------------
+
+    function startWantedAnimation() {
+      const overlay = document.getElementById("wantedOverlay");
+      const appRoot = document.getElementById("appRoot");
+
+      // Affiche l'overlay au chargement (déjà visible)
+      // Après ~2 secondes, on le masque et on révèle la page.
+      setTimeout(() => {
+        overlay.classList.add("hide");
+        appRoot.style.transition = "opacity 0.6s ease-out";
+        appRoot.style.opacity = "1";
+        appRoot.style.pointerEvents = "auto";
+      }, 2000);
+
+      // Retire l'overlay du flux après l'animation
+      setTimeout(() => {
+        overlay.style.display = "none";
+      }, 2600);
+    }
+
+    // -----------------------------------
+    // INITIALISATION
+    // -----------------------------------
+
+    async function initApp() {
+      // Lance l'animation Wanted
+      startWantedAnimation();
+
+      // Récupère les musiques depuis JSONBin
+      songs = await fetchSongsFromBin();
+      if (!Array.isArray(songs)) {
+        songs = [];
+      }
+
+      // Rend la liste
+      renderSongs();
+
+      // Écouteurs de formulaire
+      const form = document.getElementById("songForm");
+      form.addEventListener("submit", handleFormSubmit);
+
+      // Écouteurs de recherche
+      const searchInput = document.getElementById("searchInput");
+      searchInput.addEventListener("input", handleSearchInput);
+
+      // Écouteurs de détection de doublon
+      const titleInput = document.getElementById("titleInput");
+      const artistInput = document.getElementById("artistInput");
+      titleInput.addEventListener("input", handleDuplicateDetection);
+      artistInput.addEventListener("input", handleDuplicateDetection);
+
+      // Bouton "Voir la musique" du helper
+      const scrollBtn = document.getElementById("scrollToDuplicateBtn");
+      scrollBtn.addEventListener("click", () => {
+        if (duplicateSongId) {
+          scrollToSongById(duplicateSongId);
+        }
+      });
+    }
+
+    // Lance l’app une fois le DOM prêt
+    document.addEventListener("DOMContentLoaded", initApp);
+  </script>
+</body>
+</html>
